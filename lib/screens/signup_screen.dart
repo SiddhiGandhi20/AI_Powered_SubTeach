@@ -1,11 +1,12 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/screens/teacher_dashboard.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'teacher_dashboard.dart';
+import 'job_dashboard.dart';
 import 'login_screen.dart';
-import 'job_dashboard.dart'; // Import JobDashboard screen
 
 class SignUpScreen extends StatefulWidget {
-  final String? role; // Add role parameter
+  final String? role;
   const SignUpScreen({super.key, this.role});
 
   @override
@@ -13,27 +14,101 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  bool isSchool = true; // Will be set based on role in initState
+  bool isSchool = true;
   bool isPasswordVisible = false;
+  bool isLoading = false;
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    isSchool = widget.role == 'school'; // Set isSchool based on role
+    isSchool = widget.role == 'school';
   }
 
-  void _handleCreateAccount() {
-    if (!isSchool) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const JobDashboard()),
-      );
+  Future<void> _handleCreateAccount() async {
+    if (nameController.text.isEmpty ||
+        emailController.text.isEmpty ||
+        passwordController.text.isEmpty) {
+      _showMessage("Please fill all fields.");
+      return;
     }
+
+    setState(() => isLoading = true);
+    final url = Uri.parse("http://192.168.164.152:5000/api/auth/signup");
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        "name": nameController.text,
+        "email": emailController.text,
+        "password": passwordController.text,
+        "role": isSchool ? "school" : "teacher",
+      }),
+    );
+
+    setState(() => isLoading = false);
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 201) {
+      _showSuccessDialog();
+    } else {
+      _showMessage(responseData['message'] ?? "Signup failed.");
+    }
+  }
+
+  void _showMessage(String message, {bool success = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: success ? Colors.green : Colors.red,
+      ),
+    );
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text(
+            "Success!",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check_circle, size: 64, color: Colors.green),
+              const SizedBox(height: 16),
+              const Text(
+                "Your account has been created successfully!",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+              Navigator.pop(context); // Close dialog
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()), // Navigate to LoginScreen
+              );
+            },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text("Continue", style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -46,228 +121,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 20),
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.blue.withOpacity(0.2),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.school,
-                  color: Colors.white,
-                  size: 32,
-                ),
-              ),
+              _buildIcon(),
               const SizedBox(height: 24),
-              const Text(
-                'Create Account',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
+              const Text('Create Account', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              const Text(
-                'Join our education platform today',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                ),
-              ),
+              const Text('Join our education platform today', style: TextStyle(color: Colors.grey, fontSize: 16)),
               const SizedBox(height: 24),
-
-              // Toggle Switch
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => isSchool = true),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: isSchool
-                                ? Colors.blue.withOpacity(0.1)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.school_outlined,
-                                color: isSchool ? Colors.blue : Colors.grey,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'School',
-                                style: TextStyle(
-                                  color: isSchool ? Colors.blue : Colors.grey,
-                                  fontWeight: isSchool
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => isSchool = false),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: !isSchool
-                                ? Colors.blue.withOpacity(0.1)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.person_outline,
-                                color: !isSchool ? Colors.blue : Colors.grey,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Teacher',
-                                style: TextStyle(
-                                  color: !isSchool ? Colors.blue : Colors.grey,
-                                  fontWeight: !isSchool
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              _buildToggleSwitch(),
               const SizedBox(height: 24),
-
-              // Full Name TextField
-              _buildTextField('Full Name', 'Enter your full name'),
+              _buildTextField(nameController, 'Full Name', 'Enter your full name'),
               const SizedBox(height: 16),
-
-              // Email TextField
-              _buildTextField('Email Address', 'Enter your email'),
+              _buildTextField(emailController, 'Email Address', 'Enter your email'),
               const SizedBox(height: 16),
-
-              // Password TextField
               _buildPasswordField(),
-              const SizedBox(height: 8),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Must be at least 8 characters',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
               const SizedBox(height: 24),
-
-              // Create Account Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _handleCreateAccount, // Calls function on click
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Create Account',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
+              isLoading
+                  ? const CircularProgressIndicator()
+                  : _buildSignupButton(),
               const SizedBox(height: 16),
-
-              // Login Link
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Already have an account? ',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const LoginScreen()),
-                      );
-                    },
-                    child: const Text(
-                      'Log in',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              _buildLoginText(),
               const SizedBox(height: 16),
-
-              // Terms and Privacy
-              Text.rich(
-                TextSpan(
-                  text: 'By signing up, you agree to our ',
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: 'Terms of Service',
-                      style: const TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      recognizer: TapGestureRecognizer()..onTap = () {},
-                    ),
-                    const TextSpan(text: ' and '),
-                    TextSpan(
-                      text: 'Privacy Policy',
-                      style: const TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      recognizer: TapGestureRecognizer()..onTap = () {},
-                    ),
-                  ],
-                ),
-                textAlign: TextAlign.center,
-              ),
+              _buildTermsText(),
             ],
           ),
         ),
@@ -275,47 +149,102 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  Widget _buildTextField(String labelText, String hintText) {
+  Widget _buildIcon() {
+    return Container(
+      width: 64,
+      height: 64,
+      decoration: BoxDecoration(
+        color: Colors.blue,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.blue.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 4))],
+      ),
+      child: const Icon(Icons.school, color: Colors.white, size: 32),
+    );
+  }
+
+  Widget _buildToggleSwitch() {
+    return Container(
+      decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
+      child: Row(
+        children: [
+          _buildToggleOption('School', Icons.school_outlined, true),
+          _buildToggleOption('Teacher', Icons.person_outline, false),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleOption(String text, IconData icon, bool value) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => isSchool = value),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSchool == value ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(icon, color: isSchool == value ? Colors.blue : Colors.grey),
+            const SizedBox(width: 8),
+            Text(text, style: TextStyle(color: isSchool == value ? Colors.blue : Colors.grey, fontWeight: isSchool == value ? FontWeight.bold : FontWeight.normal)),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, String hint) {
     return TextField(
+      controller: controller,
       decoration: InputDecoration(
-        labelText: labelText,
-        hintText: hintText,
+        labelText: label,
+        hintText: hint,
         filled: true,
         fillColor: Colors.grey[100],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       ),
     );
   }
 
   Widget _buildPasswordField() {
     return TextField(
+      controller: passwordController,
       obscureText: !isPasswordVisible,
       decoration: InputDecoration(
         labelText: 'Password',
         hintText: 'Create a password',
         filled: true,
         fillColor: Colors.grey[100],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         suffixIcon: IconButton(
-          icon: Icon(
-            isPasswordVisible
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
-            color: Colors.grey,
-          ),
-          onPressed: () {
-            setState(() {
-              isPasswordVisible = !isPasswordVisible;
-            });
-          },
+          icon: Icon(isPasswordVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: Colors.grey),
+          onPressed: () => setState(() => isPasswordVisible = !isPasswordVisible),
         ),
       ),
     );
   }
+
+  Widget _buildSignupButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _handleCreateAccount,
+        child: const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+
+  Widget _buildLoginText() => GestureDetector(
+    onTap: () => Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    ),
+    child: const Text(
+      'Already have an account? Log in',
+      style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+    ),
+  );
+
+  Widget _buildTermsText() => const Text('By signing up, you agree to our Terms and Privacy Policy', style: TextStyle(color: Colors.grey, fontSize: 12));
 }
