@@ -34,7 +34,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  String _selectedSubject = 'All Subjects';
+  final String _selectedSubject = 'All Subjects';
 
   final List<Map<String, String>> jobPositions = [
     {

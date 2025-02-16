@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'teacher_dashboard.dart';
-import 'job_dashboard.dart';
 import 'login_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
