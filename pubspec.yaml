@@ -1,0 +1,39 @@
+name: flutter_application_1
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.6.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  intl: ^0.20.2
+  fl_chart: ^0.66.2
+  table_calendar: ^3.1.0
+  http: ^1.2.0
+  image_picker: ^0.8.4+4
+  lottie: ^2.7.0
+  shared_preferences: ^2.0.0  # Check for the latest version
+  # Add any other dependencies here
+
+  google_sign_in: ^6.1.5
+  
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/Google_logo.png
+    - assets/images/apple_logo.png
+    - assets/images/user_avatar.png   
+    - assets/images/image.jpg
+    - assets/images/placeholder.jpg
+    # - assets/animations/error.json
+    # - assets/animations/success.json
