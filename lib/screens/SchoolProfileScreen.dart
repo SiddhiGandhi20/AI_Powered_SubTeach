@@ -1,35 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-
-void main() {
-  runApp(const MaterialApp(
-    home: HomeScreen(), // Ensure HomeScreen is the initial route
-  ));
-}
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home Screen'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SchoolProfileScreen()),
-            );
-          },
-          child: const Text('Go to School Profile'),
-        ),
-      ),
-    );
-  }
-}
+import '../screens/SchoolProfileEditScreen.dart'; // Import the edit profile screen
 
 class SchoolProfileScreen extends StatefulWidget {
   const SchoolProfileScreen({super.key});
@@ -39,107 +10,35 @@ class SchoolProfileScreen extends StatefulWidget {
 }
 
 class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
-  String schoolName = 'Riverside Acadeee';
+  String schoolName = 'Riverside Academy';
   String schoolEmail = 'info@riverside.edu';
   String schoolPhone = '(555) 123-4567';
   String schoolAddress = '123 Education Lane';
   String schoolWebsite = 'www.riverside.edu';
 
   void _editSchoolInfo() {
-    TextEditingController nameController =
-        TextEditingController(text: schoolName);
-    TextEditingController emailController =
-        TextEditingController(text: schoolEmail);
-    TextEditingController phoneController =
-        TextEditingController(text: schoolPhone);
-    TextEditingController addressController =
-        TextEditingController(text: schoolAddress);
-    TextEditingController websiteController =
-        TextEditingController(text: schoolWebsite);
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.grey[50],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          title: const Text('Edit School Information',
-              style: TextStyle(fontWeight: FontWeight.w500)),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(
-                      labelText: 'School Name',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    )),
-                const SizedBox(height: 8),
-                TextField(
-                    controller: emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    )),
-                const SizedBox(height: 8),
-                TextField(
-                    controller: phoneController,
-                    decoration: InputDecoration(
-                      labelText: 'Phone',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    )),
-                const SizedBox(height: 8),
-                TextField(
-                    controller: addressController,
-                    decoration: InputDecoration(
-                      labelText: 'Address',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    )),
-                const SizedBox(height: 8),
-                TextField(
-                    controller: websiteController,
-                    decoration: InputDecoration(
-                      labelText: 'Website',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    )),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  schoolName = nameController.text;
-                  schoolEmail = emailController.text;
-                  schoolPhone = phoneController.text;
-                  schoolAddress = addressController.text;
-                  schoolWebsite = websiteController.text;
-                });
-                Navigator.of(context).pop();
-              },
-              child: const Text('Save'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-          ],
-        );
-      },
-    );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SchoolProfileEditScreen(
+          schoolName: schoolName,
+          schoolEmail: schoolEmail,
+          schoolPhone: schoolPhone,
+          schoolAddress: schoolAddress,
+          schoolWebsite: schoolWebsite,
+        ),
+      ),
+    ).then((updatedData) {
+      if (updatedData != null) {
+        setState(() {
+          schoolName = updatedData['schoolName'];
+          schoolEmail = updatedData['schoolEmail'];
+          schoolPhone = updatedData['schoolPhone'];
+          schoolAddress = updatedData['schoolAddress'];
+          schoolWebsite = updatedData['schoolWebsite'];
+        });
+      }
+    });
   }
 
   @override
@@ -350,4 +249,3 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
     );
   }
 }
-
