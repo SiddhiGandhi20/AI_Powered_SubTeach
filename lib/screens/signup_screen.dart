@@ -41,7 +41,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     try {
       setState(() => _isLoading = true);
       final response = await http.post(
-        Uri.parse('http://192.168.29.176:5000/api/auth/signup'),
+        Uri.parse('http://192.168.29.33:5000/api/auth/signup'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
