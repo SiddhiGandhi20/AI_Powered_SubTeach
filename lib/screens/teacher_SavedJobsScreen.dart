@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/job_details.dart';
-import 'package:flutter_application_1/screens/teacher_Notification%20.dart';
-import 'package:flutter_application_1/screens/teacher_SavedJobsScreen.dart';
 import 'package:flutter_application_1/screens/teacher_profile.dart';
 import 'package:flutter_application_1/screens/teacher_schools_messages.dart';
 
@@ -123,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const TeacherSchoolsMessages(),
         SavedJobsScreen(savedJobs: savedJobs), // ✅ Now it works
-        const TeacherProfileScreen(),
+       TeacherProfileScreen(),
       ];
 
   @override
