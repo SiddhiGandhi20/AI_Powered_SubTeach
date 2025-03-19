@@ -1,7 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/SchoolProfileScreen.dart';
+import 'package:flutter_application_1/screens/TermsOfServiceScreen.dart';
 import 'package:flutter_application_1/screens/teacher_profile.dart';
+import 'package:flutter_application_1/screens/PrivacyPolicyScreen.dart';
 import 'package:flutter_application_1/widgets/floating_chatbot_button.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -425,7 +427,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               color: Colors.blue,
                               fontWeight: FontWeight.bold,
                             ),
-                            recognizer: TapGestureRecognizer()..onTap = () {},
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        TermsOfServiceScreen(),
+                                  ),
+                                );
+                              },
                           ),
                           const TextSpan(text: ' and '),
                           TextSpan(
@@ -434,7 +445,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               color: Colors.blue,
                               fontWeight: FontWeight.bold,
                             ),
-                            recognizer: TapGestureRecognizer()..onTap = () {},
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PrivacyPolicyScreen(),
+                                  ),
+                                );
+                              },
                           ),
                         ],
                       ),
