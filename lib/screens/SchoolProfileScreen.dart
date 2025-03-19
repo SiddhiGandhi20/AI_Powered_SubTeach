@@ -1,6 +1,37 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import '../screens/SchoolProfileEditScreen.dart'; // Import the edit profile screen
+
+void main() {
+  runApp(const MaterialApp(
+    home: HomeScreen(), // Ensure HomeScreen is the initial route
+  ));
+}
+
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Home Screen'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SchoolProfileScreen()),
+            );
+          },
+          child: const Text('Go to School Profile'),
+        ),
+      ),
+    );
+  }
+}
 
 class SchoolProfileScreen extends StatefulWidget {
   const SchoolProfileScreen({super.key});
@@ -16,29 +47,158 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
   String schoolAddress = '123 Education Lane';
   String schoolWebsite = 'www.riverside.edu';
 
+  @override
+  void initState() {
+    super.initState();
+    fetchSchoolInfo(); // Fetch updated data when screen loads
+  }
+
+  Future<void> fetchSchoolInfo() async {
+    final url = Uri.parse('http://localhost:5000/api/school'); // Use your actual API URL
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      setState(() {
+        schoolName = data['schoolName'] ?? 'Unknown School';
+        schoolEmail = data['schoolEmail'] ?? 'N/A';
+        schoolPhone = data['schoolPhone'] ?? 'N/A';
+        schoolAddress = data['schoolAddress'] ?? 'N/A';
+        schoolWebsite = data['schoolWebsite'] ?? 'N/A';
+      });
+    } else {
+      print("Failed to fetch school info: ${response.body}");
+    }
+  }
+
+  Future<void> updateSchoolInfo(Map<String, String> data) async {
+    final url = Uri.parse('http://localhost:5000/api/school'); // Change to your actual API URL
+
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(data),
+    );
+
+    if (response.statusCode == 200) {
+      print("School updated successfully");
+
+      // Fetch updated data and refresh UI immediately
+      fetchSchoolInfo();
+    } else {
+      print("Failed to update school: ${response.body}");
+    }
+  }
+
   void _editSchoolInfo() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SchoolProfileEditScreen(
-          schoolName: schoolName,
-          schoolEmail: schoolEmail,
-          schoolPhone: schoolPhone,
-          schoolAddress: schoolAddress,
-          schoolWebsite: schoolWebsite,
+    TextEditingController nameController =
+        TextEditingController(text: schoolName);
+    TextEditingController emailController =
+        TextEditingController(text: schoolEmail);
+    TextEditingController phoneController =
+        TextEditingController(text: schoolPhone);
+    TextEditingController addressController =
+        TextEditingController(text: schoolAddress);
+    TextEditingController websiteController =
+        TextEditingController(text: schoolWebsite);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[50],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          title: const Text('Edit School Information',
+              style: TextStyle(fontWeight: FontWeight.w500)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: 'School Name',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    )),
+                const SizedBox(height: 8),
+                TextField(
+                    controller: emailController,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    )),
+                const SizedBox(height: 8),
+                TextField(
+                    controller: phoneController,
+                    decoration: InputDecoration(
+                      labelText: 'Phone',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    )),
+                const SizedBox(height: 8),
+                TextField(
+                    controller: addressController,
+                    decoration: InputDecoration(
+                      labelText: 'Address',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    )),
+                const SizedBox(height: 8),
+                TextField(
+                    controller: websiteController,
+                    decoration: InputDecoration(
+                      labelText: 'Website',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    )),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  schoolName = nameController.text;
+                  schoolEmail = emailController.text;
+                  schoolPhone = phoneController.text;
+                  schoolAddress = addressController.text;
+                  schoolWebsite = websiteController.text;
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text('Save'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(5),
         ),
       ),
-    ).then((updatedData) {
-      if (updatedData != null) {
-        setState(() {
-          schoolName = updatedData['schoolName'];
-          schoolEmail = updatedData['schoolEmail'];
-          schoolPhone = updatedData['schoolPhone'];
-          schoolAddress = updatedData['schoolAddress'];
-          schoolWebsite = updatedData['schoolWebsite'];
-        });
-      }
-    });
+    );
   }
 
   @override
@@ -58,10 +218,7 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
             flexibleSpace: FlexibleSpaceBar(
               title: const Text(
                 'School Profile',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600),
+                style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
               ),
               background: Stack(
                 fit: StackFit.expand,
@@ -99,8 +256,7 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
               padding: const EdgeInsets.all(20),
               child: Card(
                 elevation: 6,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 shadowColor: Colors.blue,
                 child: Padding(
                   padding: const EdgeInsets.all(24),
@@ -111,29 +267,21 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
                           CircleAvatar(
                             radius: 40,
                             backgroundColor: Colors.blue[800],
-                            child: const Icon(Icons.school,
-                                color: Colors.white, size: 40),
+                            child: const Icon(Icons.school, color: Colors.white, size: 40),
                           ),
                           const SizedBox(width: 16),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(schoolName,
-                                  style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.grey[800])),
+                              Text(schoolName, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.grey[800])),
                               const SizedBox(height: 4),
-                              Text('Educational Institution',
-                                  style: TextStyle(
-                                      color: Colors.grey[600], fontSize: 14)),
+                              Text('Educational Institution', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
                             ],
                           ),
                         ],
                       ),
                       const SizedBox(height: 24),
-                      _buildContactInfo(
-                          Icons.location_on_outlined, schoolAddress),
+                      _buildContactInfo(Icons.location_on_outlined, schoolAddress),
                       _buildContactInfo(Icons.phone_outlined, schoolPhone),
                       _buildContactInfo(Icons.email_outlined, schoolEmail),
                       _buildContactInfo(Icons.language_outlined, schoolWebsite),
@@ -160,6 +308,7 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
             ),
           ),
         ],
+        
       ),
     );
   }
@@ -172,14 +321,12 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
           Icon(icon, size: 24, color: Colors.blue[800]),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(text,
-                style: TextStyle(color: Colors.grey[700], fontSize: 16)),
+            child: Text(text, style: TextStyle(color: Colors.grey[700], fontSize: 16)),
           ),
         ],
       ),
     );
   }
-
   Widget _buildJobItem(BuildContext context, int index) {
     final jobs = [
       {
@@ -248,4 +395,6 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
       ),
     );
   }
+
+
 }
