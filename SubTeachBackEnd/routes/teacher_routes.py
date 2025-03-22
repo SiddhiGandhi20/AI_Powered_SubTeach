@@ -3,10 +3,11 @@ from flask import Blueprint, request, jsonify, send_from_directory, url_for
 from bson.objectid import ObjectId
 from pymongo import MongoClient
 from werkzeug.utils import secure_filename
+from flask_cors import CORS
 from config import Config
 from models.teacher_model import TeacherModel
 
-# Create MongoDB connection inside routes
+# Create MongoDB connection
 client = MongoClient(Config.MONGO_URI)
 db = client[Config.DATABASE_NAME]
 
@@ -16,26 +17,18 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 teacher_routes = Blueprint("teacher_routes", __name__)
 teacher_model = TeacherModel(db)
+CORS(teacher_routes)  # Enable CORS for frontend communication
 
-# Get Teacher Profile
+# ✅ Helper function for file upload
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Get Teacher Profile
-@teacher_routes.route("/teacher/<teacher_id>", methods=["GET"])
-def get_teacher(teacher_id):
-    teacher = teacher_model.get_teacher(teacher_id)
-    if teacher:
-        teacher["_id"] = str(teacher["_id"])
-        return jsonify({"success": True, "teacher": teacher}), 200
-    return jsonify({"success": False, "message": "Teacher not found"}), 404
-
-# Create Teacher Profile with Image Upload
+# ✅ Create Teacher Profile (POST)
 @teacher_routes.route("/teacher", methods=["POST"])
 def create_teacher():
     data = request.form.to_dict()
-    
-    # File Upload
+
+    # File Upload Handling
     file = request.files.get("profile_photo")
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
@@ -46,7 +39,16 @@ def create_teacher():
     teacher_id = teacher_model.create_teacher(data)
     return jsonify({"success": True, "message": "Teacher created successfully", "teacher_id": str(teacher_id)}), 201
 
-# Update Teacher Profile
+# ✅ Get Single Teacher (GET)
+@teacher_routes.route("/teacher/<teacher_id>", methods=["GET"])
+def get_teacher(teacher_id):
+    teacher = teacher_model.get_teacher(teacher_id)
+    if teacher:
+        teacher["_id"] = str(teacher["_id"])
+        return jsonify({"success": True, "teacher": teacher}), 200
+    return jsonify({"success": False, "message": "Teacher not found"}), 404
+
+# ✅ Update Teacher Profile (PUT)
 @teacher_routes.route("/teacher/<teacher_id>", methods=["PUT"])
 def update_teacher(teacher_id):
     data = request.form.to_dict()
@@ -64,7 +66,7 @@ def update_teacher(teacher_id):
         return jsonify({"success": True, "message": "Teacher updated successfully"}), 200
     return jsonify({"success": False, "message": "No changes made"}), 400
 
-# Delete Teacher Profile
+# ✅ Delete Teacher Profile (DELETE)
 @teacher_routes.route("/teacher/<teacher_id>", methods=["DELETE"])
 def delete_teacher(teacher_id):
     result = teacher_model.delete_teacher(teacher_id)
@@ -72,7 +74,7 @@ def delete_teacher(teacher_id):
         return jsonify({"success": True, "message": "Teacher deleted successfully"}), 200
     return jsonify({"success": False, "message": "Teacher not found"}), 404
 
-# 🟢 GET ALL TEACHERS
+# ✅ Get All Teachers (GET)
 @teacher_routes.route("/teachers", methods=["GET"])
 def get_all_teachers():
     teachers = teacher_model.get_all_teachers()
@@ -80,7 +82,7 @@ def get_all_teachers():
         teacher["_id"] = str(teacher["_id"])
     return jsonify({"success": True, "teachers": teachers}), 200
 
-# 🟢 SERVE PROFILE IMAGES
+# ✅ Serve Profile Images
 @teacher_routes.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
