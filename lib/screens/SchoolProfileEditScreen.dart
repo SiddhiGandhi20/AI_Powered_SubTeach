@@ -8,7 +8,7 @@ class SchoolProfileEditScreen extends StatefulWidget {
   final String schoolAddress;
   final String schoolWebsite;
 
-  SchoolProfileEditScreen({
+  const SchoolProfileEditScreen({super.key, 
     required this.schoolName,
     required this.schoolEmail,
     required this.schoolPhone,

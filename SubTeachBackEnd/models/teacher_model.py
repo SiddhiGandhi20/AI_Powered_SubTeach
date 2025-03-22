@@ -15,14 +15,14 @@ class TeacherModel:
             "experience": data.get("experience"),
             "qualification": data.get("qualification"),
             "certifications": data.get("certifications", []),
-            "availability": data.get("availability", True),
+            "availability": data.get("availability", "true") == "true",
             "profile_photo": data.get("profile_photo", "")
         }
         result = self.collection.insert_one(teacher_data)
         return result.inserted_id
 
     def update_teacher(self, teacher_id, data):
-        update_data = {key: value for key, value in data.items() if value is not None}
+        update_data = {key: value for key, value in data.items() if value}
         return self.collection.update_one({"_id": ObjectId(teacher_id)}, {"$set": update_data})
 
     def delete_teacher(self, teacher_id):
