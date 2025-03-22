@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 //import 'package:flutter_application_1/screens/job_dashboard.dart';
 import 'package:flutter_application_1/screens/job_posting.dart';
+import 'package:flutter_application_1/screens/nexus_dashboard.dart';
 import 'package:flutter_application_1/screens/notification_screen.dart';
 import 'package:flutter_application_1/screens/payment_history.dart';
 import 'package:flutter_application_1/screens/payment_overview.dart';
@@ -25,7 +26,9 @@ class Sidebar extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 24,
               ),
+              
             ),
+            
           ),
           ListTile(
             leading: const Icon(Icons.home),
@@ -74,6 +77,16 @@ class Sidebar extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.home),
+            title: const Text('nexus_dashboard'),
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const DashboardScreen()),
               );
             },
           ),

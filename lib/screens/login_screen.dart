@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/SchoolProfileScreen.dart';
+import 'package:flutter_application_1/screens/nexus_dashboard.dart';
 import 'package:flutter_application_1/screens/teacher_profile.dart';
 import 'package:flutter_application_1/widgets/floating_chatbot_button.dart';
 import 'package:http/http.dart' as http;
@@ -130,12 +131,14 @@ class _LoginScreenState extends State<LoginScreen> {
         if (role == 'teacher') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const TeacherProfileScreen()),
+            MaterialPageRoute(
+                builder: (context) => const TeacherProfileScreen()),
           );
         } else {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const SchoolProfileScreen()),
+            MaterialPageRoute(
+                builder: (context) => const SchoolProfileScreen()),
           );
         }
       } else {
@@ -171,12 +174,14 @@ class _LoginScreenState extends State<LoginScreen> {
           if (role == 'teacher') {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const TeacherProfileScreen()),
+              MaterialPageRoute(
+                  builder: (context) => const TeacherProfileScreen()),
             );
           } else {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const SchoolProfileScreen()),
+              MaterialPageRoute(
+                  builder: (context) => const SchoolProfileScreen()),
             );
           }
         } else {
@@ -384,7 +389,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               icon: const Icon(
                                 Icons.apple, // Changed to use the Apple icon
                                 size: 24,
-                                color: Colors.black, // You can adjust the color as needed
+                                color: Colors
+                                    .black, // You can adjust the color as needed
                               ),
                               label: 'Apple',
                               onPressed: () {},
@@ -403,14 +409,33 @@ class _LoginScreenState extends State<LoginScreen> {
                               MaterialPageRoute(
                                   builder: (context) => const SignUpScreen()),
                             ),
-                            child: const Text(
-                              'Sign Up',
-                              style: TextStyle(
-                                color: Colors.blue,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            child: Column(
+                              children: [
+                                const Text(
+                                  'Sign Up',
+                                  style: TextStyle(
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => const DashboardScreen()), // Navigate to Nexus Dashboard
+                                  ),
+                                  child: const Text(
+                                    'Go to Dashboard',
+                                    style: TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                            ),
+                          
                         ],
                       ),
                     ],
